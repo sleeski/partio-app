@@ -1,18 +1,9 @@
 export const calculateResults = (answers, questions) => {
-  // Define the list of stats
-  const statsConfig = [
-    'luonto',
-    'partiotaidot',
-    'järjestö',
-    'kaverit'
-  ];
-
-  // Initialize stats, maxPoints, and minPoints objects
+  const statsConfig = ['luonto', 'partiotaidot', 'järjestö', 'kaverit'];
   let stats = statsConfig.reduce((acc, stat) => ({ ...acc, [stat]: 0 }), {});
   let maxPoints = statsConfig.reduce((acc, stat) => ({ ...acc, [stat]: 0 }), {});
   let minPoints = statsConfig.reduce((acc, stat) => ({ ...acc, [stat]: 0 }), {});
 
-  // Calculate stats, maxPoints, and minPoints based on questions
   questions.forEach(question => {
     let maxImpacts = statsConfig.reduce((acc, stat) => ({ ...acc, [stat]: { max: Number.NEGATIVE_INFINITY, min: Number.POSITIVE_INFINITY } }), {});
     
@@ -24,7 +15,6 @@ export const calculateResults = (answers, questions) => {
       });
     });
 
-    // Add max and min impacts for this question
     statsConfig.forEach(stat => {
       const impactMax = Number.isFinite(maxImpacts[stat].max) ? maxImpacts[stat].max : 0;
       const impactMin = Number.isFinite(maxImpacts[stat].min) ? maxImpacts[stat].min : 0;
@@ -32,7 +22,6 @@ export const calculateResults = (answers, questions) => {
       minPoints[stat] += impactMin;
     });
 
-    // Add selected answer's stat impacts
     const answerValue = answers[question.id];
     const option = question.options.find(opt => opt.value === answerValue);
     if (option && option.stats) {
@@ -42,15 +31,17 @@ export const calculateResults = (answers, questions) => {
     }
   });
 
-  // Normalize stats to a 0-100 scale based on minPoints and maxPoints
+  // Log for debugging
+  console.log('maxPoints:', maxPoints);
+  console.log('minPoints:', minPoints);
+
   statsConfig.forEach(stat => {
     const range = maxPoints[stat] - minPoints[stat];
     stats[stat] = range > 0 
       ? Math.round(((stats[stat] - minPoints[stat]) / range) * 100) 
-      : 0; // Default to 0% if no range
+      : 0;
   });
 
-  // Determine personality profile based on highest stat
   let maxStat = '';
   let maxValue = -Infinity;
   for (const [stat, value] of Object.entries(stats)) {
@@ -64,22 +55,22 @@ export const calculateResults = (answers, questions) => {
     luonto: {
       title: "Luonnon Ystävä",
       description: "Olet intohimoinen luonnon rakastaja, joka nauttii eniten partion ulkoilma-aktiviteeteista ja retkistä metsässä.",
-      image: "/images/luonto.webp" // Replace with real image path
+      image: "/images/luonto.webp"
     },
     partiotaidot: {
       title: "Taitava Eränkävijä",
       description: "Hallitset partiotaitoja erinomaisesti ja pidät rakentelusta, solmuista ja selviytymistaidoista.",
-      image: "/images/partiotaidot.webp" // Replace with real image path
+      image: "/images/partiotaidot.webp"
     },
     järjestö: {
       title: "Järjestöaktiivi",
       description: "Olet aktiivinen partiojärjestössä, keräät merkkejä innokkaasti ja osallistut mielelläsi tapahtumiin ja paraateihin.",
-      image: "/images/jarjesto.webp" // Replace with real image path
+      image: "/images/jarjesto.webp"
     },
     kaverit: {
       title: "Sosiaalinen Partiolainen",
       description: "Sinulle partio on ennen kaikkea kavereita ja yhdessäoloa. Nautit leireistä ja kokouksista ystävien kanssa.",
-      image: "/images/kaverit.webp" // Replace with real image path
+      image: "/images/kaverit.webp"
     }
   };
 
@@ -93,6 +84,6 @@ export const calculateResults = (answers, questions) => {
     ...selected,
     stats,
     maxPoints,
-    minPoints // Added for backend use
+    minPoints
   };
 };
