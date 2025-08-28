@@ -1,8 +1,8 @@
-const { sql } = require('@vercel/postgres');
-const questions = require('../src/data/questions'); // Adjust path to your questions.js
-const { calculateResults } = require('../src/data/results'); // Adjust path to your results.js
+import { sql } from '@vercel/postgres';
+import questions from '../src/data/questions.js'; // Adjust path and add .js
+import { calculateResults } from '../src/data/results.js'; // Adjust path and add .js
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -68,4 +68,4 @@ module.exports = async function handler(req, res) {
     console.error(error);
     return res.status(500).json({ error: 'Server error' });
   }
-};
+}
