@@ -4,6 +4,8 @@ export const calculateResults = (answers, questions) => {
   let maxPoints = statsConfig.reduce((acc, stat) => ({ ...acc, [stat]: 0 }), {});
   let minPoints = statsConfig.reduce((acc, stat) => ({ ...acc, [stat]: 0 }), {});
 
+  console.log('calculateResults - answers:', answers); // Log answers object
+
   questions.forEach(question => {
     let maxImpacts = statsConfig.reduce((acc, stat) => ({ ...acc, [stat]: { max: Number.NEGATIVE_INFINITY, min: Number.POSITIVE_INFINITY } }), {});
     
@@ -26,14 +28,18 @@ export const calculateResults = (answers, questions) => {
     const option = question.options.find(opt => opt.value === answerValue);
     if (option && option.stats) {
       statsConfig.forEach(stat => {
-        stats[stat] += option.stats[stat] || 0;
+        const statValue = option.stats[stat] || 0;
+        stats[stat] += statValue;
+        if (stat === 'luonto' && statValue !== 0) {
+          console.log(`Question ${question.id}: luonto += ${statValue}`);
+        }
       });
     }
   });
 
-  // Log for debugging
-  console.log('maxPoints:', maxPoints);
-  console.log('minPoints:', minPoints);
+  console.log('calculateResults - raw stats:', stats);
+  console.log('calculateResults - maxPoints:', maxPoints);
+  console.log('calculateResults - minPoints:', minPoints);
 
   statsConfig.forEach(stat => {
     const range = maxPoints[stat] - minPoints[stat];

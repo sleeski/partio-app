@@ -184,7 +184,7 @@ export default [
         options: [
           { value: 1, label: "merkkejä ja vapaaehtoistyötä", stats: { järjestö: 2 } },
           { value: 2, label: "pientä sotilaallista kokoonpanoa", stats: {} },
-          { value: 3, label: "kisoja, suorittamista ja mitaleja", stats: { paritotaidot: 2 } },
+          { value: 3, label: "kisoja, suorittamista ja mitaleja", stats: { partiotaidot: 2 } },
           { value: 4, label: "uusia ystäviä", stats: { kaverit: 2 } },
           { value: 5, label: "luonnossa liikkumista", stats: { luonto: 2 } }
         ]

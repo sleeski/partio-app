@@ -24,48 +24,50 @@ function App() {
   const ordinalPrefixes = ['Ensimmäinen', 'Toinen'];
 
   const handleAnswer = async (questionId, value) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
-    setIsFading(true);
+  setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  setIsFading(true);
 
+  try {
+    await fetch('/api/answers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        categoryIndex: currentCategory,
+        questionIndex: currentQuestion,
+        questionId,
+        value,
+      }),
+    });
+  } catch (error) {
+    console.error('Error saving answer:', error);
+  }
+
+  const currentCategoryQuestions = questions[currentCategory].questions;
+  if (currentQuestion + 1 < currentCategoryQuestions.length) {
+    setCurrentQuestion((prev) => prev + 1);
+  } else if (currentCategory + 1 < questions.length) {
+    setCurrentCategory((prev) => prev + 1);
+    setCurrentQuestion(-1);
+  } else {
+    setCurrentCategory(questions.length);
+    setCurrentQuestion(-1);
     try {
-      await fetch('/api/answers', {
+      const res = await fetch('/api/results', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          categoryIndex: currentCategory,
-          questionIndex: currentQuestion,
-          questionId,
-          value,
-        }),
+        body: JSON.stringify({ userId }),
       });
+      const data = await res.json();
+      setResults(data);
     } catch (error) {
-      console.error('Error saving answer:', error);
+      console.error('Error fetching results:', error);
+      // Manually include the last answer in the fallback calculation
+      const updatedAnswers = { ...answers, [questionId]: value };
+      setResults({ profile: calculateResults(updatedAnswers, flatQuestions) });
     }
-
-    const currentCategoryQuestions = questions[currentCategory].questions;
-    if (currentQuestion + 1 < currentCategoryQuestions.length) {
-      setCurrentQuestion((prev) => prev + 1);
-    } else if (currentCategory + 1 < questions.length) {
-      setCurrentCategory((prev) => prev + 1);
-      setCurrentQuestion(-1);
-    } else {
-      setCurrentCategory(questions.length);
-      setCurrentQuestion(-1);
-      try {
-        const res = await fetch('/api/results', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId }),
-        });
-        const data = await res.json();
-        setResults(data);
-      } catch (error) {
-        console.error('Error fetching results:', error);
-        setResults({ profile: calculateResults(answers, flatQuestions) }); // Fallback
-      }
-    }
-  };
+  }
+};
 
   const startTest = async () => {
     setIsFading(true);
