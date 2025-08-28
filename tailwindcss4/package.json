@@ -12,7 +12,9 @@
   "dependencies": {
     "@nivo/bar": "^0.99.0",
     "@nivo/core": "^0.99.0",
+    "@prisma/client": "^6.15.0",
     "@tailwindcss/vite": "^4.1.11",
+    "@vercel/postgres": "^0.10.0",
     "d3": "^7.9.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -28,6 +30,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "prisma": "^6.15.0",
     "vite": "^7.0.4"
   }
 }

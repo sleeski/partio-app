@@ -5,62 +5,101 @@ import questions from './data/questions';
 import { calculateResults } from './data/results';
 
 function App() {
-  const [currentCategory, setCurrentCategory] = useState(-1); // Tracks current category index (-1 for landing page)
-  const [currentQuestion, setCurrentQuestion] = useState(-1); // Tracks question index within category
-  const [displayCategory, setDisplayCategory] = useState(-1); // Tracks displayed category
-  const [displayQuestion, setDisplayQuestion] = useState(-1); // Tracks displayed question or category intro
-  const [isFading, setIsFading] = useState(false); // Tracks fade state
+  const [currentCategory, setCurrentCategory] = useState(-1);
+  const [currentQuestion, setCurrentQuestion] = useState(-1);
+  const [displayCategory, setDisplayCategory] = useState(-1);
+  const [displayQuestion, setDisplayQuestion] = useState(-1);
+  const [isFading, setIsFading] = useState(false);
   const [answers, setAnswers] = useState({});
+  const [userId, setUserId] = useState(null);
+  const [results, setResults] = useState(null);
 
-  // Flatten questions for results calculation
   const flatQuestions = questions.flatMap((category, catIndex) =>
     category.questions.map((question, qIndex) => ({
       ...question,
-      id: `category${catIndex}_question${qIndex}`
+      id: `category${catIndex}_question${qIndex}`,
     }))
   );
 
-  // Ordinal prefixes for category titles
-  const ordinalPrefixes = ['Ensimmäinen', 'Toinen', 'Kolmas', 'Neljäs', 'Viides', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+  const ordinalPrefixes = ['Ensimmäinen', 'Toinen'];
 
-  const handleAnswer = (questionId, value) => {
-    setAnswers(prev => ({ ...prev, [questionId]: value }));
+  const handleAnswer = async (questionId, value) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
     setIsFading(true);
-    // Move to next question or category
+
+    try {
+      await fetch('/api/answers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          categoryIndex: currentCategory,
+          questionIndex: currentQuestion,
+          questionId,
+          value,
+        }),
+      });
+    } catch (error) {
+      console.error('Error saving answer:', error);
+    }
+
     const currentCategoryQuestions = questions[currentCategory].questions;
     if (currentQuestion + 1 < currentCategoryQuestions.length) {
-      setCurrentQuestion(prev => prev + 1);
+      setCurrentQuestion((prev) => prev + 1);
     } else if (currentCategory + 1 < questions.length) {
-      setCurrentCategory(prev => prev + 1);
-      setCurrentQuestion(-1); // Start with category intro
-    } else {
-      setCurrentCategory(questions.length); // Move to results
+      setCurrentCategory((prev) => prev + 1);
       setCurrentQuestion(-1);
+    } else {
+      setCurrentCategory(questions.length);
+      setCurrentQuestion(-1);
+      try {
+        const res = await fetch('/api/results', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId }),
+        });
+        const data = await res.json();
+        setResults(data);
+      } catch (error) {
+        console.error('Error fetching results:', error);
+        setResults({ profile: calculateResults(answers, flatQuestions) }); // Fallback
+      }
     }
   };
 
-  const startTest = () => {
+  const startTest = async () => {
     setIsFading(true);
     setCurrentCategory(0);
-    setCurrentQuestion(-1); // Start with first category intro
+    setCurrentQuestion(-1);
+    try {
+      const res = await fetch('/api/answers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const { userId } = await res.json();
+      setUserId(userId);
+    } catch (error) {
+      console.error('Error creating user:', error);
+    }
   };
 
   const goBack = () => {
     setIsFading(true);
     if (currentQuestion > -1) {
-      setCurrentQuestion(prev => prev - 1); // Go back to previous question or category intro
+      setCurrentQuestion((prev) => prev - 1);
     } else if (currentCategory > 0) {
-      setCurrentCategory(prev => prev - 1);
-      setCurrentQuestion(questions[prev - 1].questions.length - 1); // Last question of previous category
+      setCurrentCategory((prev) => prev - 1);
+      setCurrentQuestion(questions[prev - 1].questions.length - 1);
     } else {
-      setCurrentCategory(-1); // Back to landing page
+      setCurrentCategory(-1);
       setCurrentQuestion(-1);
     }
   };
 
   const continueToQuestions = () => {
     setIsFading(true);
-    setCurrentQuestion(0); // Start first question of current category
+    setCurrentQuestion(0);
   };
 
   useEffect(() => {
@@ -69,7 +108,7 @@ function App() {
         setDisplayCategory(currentCategory);
         setDisplayQuestion(currentQuestion);
         setIsFading(false);
-      }, 500); // Match transition duration in CSS
+      }, 500);
       return () => clearTimeout(timer);
     } else {
       setDisplayCategory(currentCategory);
@@ -77,22 +116,22 @@ function App() {
     }
   }, [currentCategory, currentQuestion, isFading]);
 
-  // Scroll to top when reaching the results page
   useEffect(() => {
     if (displayCategory >= questions.length) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [displayCategory]);
 
-  // Prepare data for Nivo bar chart
   const getChartData = () => {
-    const result = calculateResults(answers, flatQuestions);
-    return Object.entries(result.stats)
-      .filter(([stat, value]) => result.maxPoints[stat] > 0)
+    const profile = results?.profile || calculateResults(answers, flatQuestions);
+    const chartData = Object.entries(profile.stats)
+      .filter(([stat]) => profile.maxPoints[stat] > 0)
       .map(([stat, value]) => ({
         stat: stat.charAt(0).toUpperCase() + stat.slice(1),
-        value
+        Sinä: value,
+        Keskiarvo: results?.avgStats?.[stat] || 0,
       }));
+    return chartData;
   };
 
   return (
@@ -176,7 +215,7 @@ function App() {
                 <p className="text-neutral mb-6">{questions[displayCategory].questions[displayQuestion].text}</p>
               </div>
               <div className="mt-auto space-y-3">
-                {questions[displayCategory].questions[displayQuestion].options.map(option => (
+                {questions[displayCategory].questions[displayQuestion].options.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => handleAnswer(`category${displayCategory}_question${displayQuestion}`, option.value)}
@@ -193,44 +232,45 @@ function App() {
                 Sinä olet...
               </h1>
               <img
-                src={calculateResults(answers, flatQuestions).image}
-                alt={calculateResults(answers, flatQuestions).title}
+                src={(results?.profile || calculateResults(answers, flatQuestions)).image}
+                alt={(results?.profile || calculateResults(answers, flatQuestions)).title}
                 className="mx-auto mb-6 max-w-full h-auto rounded-md"
                 style={{ maxHeight: '200px' }}
               />
               <h2 className="text-xl font-semibold mb-4 text-neutral">
-                {calculateResults(answers, flatQuestions).title}
+                {(results?.profile || calculateResults(answers, flatQuestions)).title}
               </h2>
               <p className="text-neutral mb-6">
-                {calculateResults(answers, flatQuestions).description}
+                {(results?.profile || calculateResults(answers, flatQuestions)).description}
               </p>
               <div className="text-neutral mb-6">
-                <h3 className="text-lg font-semibold mb-2">Sinun pisteesi:</h3>
-                {Object.entries(calculateResults(answers, flatQuestions).stats)
-                  .filter(([stat, value]) => calculateResults(answers, flatQuestions).maxPoints[stat] > 0)
+                <h3 className="text-lg font-semibold mb-2">Sinun pisteesi ja keskiarvo:</h3>
+                {Object.entries((results?.profile || calculateResults(answers, flatQuestions)).stats)
+                  .filter(([stat]) => (results?.profile || calculateResults(answers, flatQuestions)).maxPoints[stat] > 0)
                   .map(([stat, value]) => (
-                    <p key={stat}>{stat.charAt(0).toUpperCase() + stat.slice(1)}: {value}%</p>
-                  ))
-                }
+                    <p key={stat}>
+                      {stat.charAt(0).toUpperCase() + stat.slice(1)}: Sinä {value}% | Keskiarvo {results?.avgStats?.[stat] || 0}%
+                    </p>
+                  ))}
                 <div className="h-64 mt-4">
                   <ResponsiveBar
                     data={getChartData()}
-                    keys={['value']}
+                    keys={['Sinä', 'Keskiarvo']}
                     indexBy="stat"
                     isInteractive={false}
-                    margin={{ top: 20, right: 30, bottom: 50, left: 30 }}
+                    margin={{ top: 20, right: 60, bottom: 50, left: 30 }}
                     padding={0.3}
                     enableGridY={false}
                     valueScale={{ type: 'linear' }}
                     indexScale={{ type: 'band', round: true }}
-                    colors={{ scheme: 'nivo' }}
+                    colors={['#1f77b4', '#ff7f0e']} // Blue for Sinä, Orange for Keskiarvo
                     borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
                     axisBottom={{
                       tickSize: 5,
                       tickPadding: 5,
                       tickRotation: 0,
                       legendPosition: 'middle',
-                      legendOffset: 32
+                      legendOffset: 32,
                     }}
                     axisLeft={false}
                     labelSkipWidth={12}
@@ -239,12 +279,34 @@ function App() {
                     animate={true}
                     motionStiffness={90}
                     motionDamping={15}
+                    legends={[
+                      {
+                        dataFrom: 'keys',
+                        anchor: 'bottom-right',
+                        direction: 'column',
+                        justify: false,
+                        translateX: 120,
+                        translateY: 0,
+                        itemsSpacing: 2,
+                        itemWidth: 100,
+                        itemHeight: 20,
+                        itemDirection: 'left-to-right',
+                        itemOpacity: 0.85,
+                        symbolSize: 20,
+                        effects: [
+                          {
+                            on: 'hover',
+                            style: { itemOpacity: 1 },
+                          },
+                        ],
+                      },
+                    ]}
                   />
                 </div>
               </div>
               <button
                 onClick={() => {
-                  window.location.reload(); // Reload the page to reset to landing page
+                  window.location.reload();
                 }}
                 className="px-6 py-3 bg-primary text-white rounded-md hover:bg-neutral-content hover:text-neutral transition-colors text-lg font-semibold border-2 border-neutral"
               >
