@@ -60,8 +60,8 @@ export const calculateResults = (answers, questions) => {
   const profileMap = {
     luonto: {
       title: "Luonnon Ystävä",
-      description: "Olet intohimoinen luonnon rakastaja, joka nauttii eniten partion ulkoilma-aktiviteeteista ja retkistä metsässä.",
-      image: "/images/luonto.webp"
+      description: "Olet intohimoinen luonnon rakastaja, joka nauttii eniten partion ulkoilma-aktiviteeteista ja retkistä metsässä. Olet intohimoinen luonnon rakastaja, joka nauttii eniten partion ulkoilma-aktiviteeteista ja retkistä metsässä. Olet intohimoinen luonnon rakastaja, joka nauttii eniten partion ulkoilma-aktiviteeteista ja retkistä metsässä. Olet intohimoinen luonnon rakastaja, joka nauttii eniten partion ulkoilma-aktiviteeteista ja retkistä metsässä. Olet intohimoinen luonnon rakastaja, joka nauttii eniten partion ulkoilma-aktiviteeteista ja retkistä metsässä.",
+      image: "/images/default-result.webp"
     },
     partiotaidot: {
       title: "Taitava Eränkävijä",

@@ -24,50 +24,49 @@ function App() {
   const ordinalPrefixes = ['Ensimmäinen', 'Toinen'];
 
   const handleAnswer = async (questionId, value) => {
-  setAnswers((prev) => ({ ...prev, [questionId]: value }));
-  setIsFading(true);
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    setIsFading(true);
 
-  try {
-    await fetch('/api/answers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId,
-        categoryIndex: currentCategory,
-        questionIndex: currentQuestion,
-        questionId,
-        value,
-      }),
-    });
-  } catch (error) {
-    console.error('Error saving answer:', error);
-  }
-
-  const currentCategoryQuestions = questions[currentCategory].questions;
-  if (currentQuestion + 1 < currentCategoryQuestions.length) {
-    setCurrentQuestion((prev) => prev + 1);
-  } else if (currentCategory + 1 < questions.length) {
-    setCurrentCategory((prev) => prev + 1);
-    setCurrentQuestion(-1);
-  } else {
-    setCurrentCategory(questions.length);
-    setCurrentQuestion(-1);
     try {
-      const res = await fetch('/api/results', {
+      await fetch('/api/answers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({
+          userId,
+          categoryIndex: currentCategory,
+          questionIndex: currentQuestion,
+          questionId,
+          value,
+        }),
       });
-      const data = await res.json();
-      setResults(data);
     } catch (error) {
-      console.error('Error fetching results:', error);
-      // Manually include the last answer in the fallback calculation
-      const updatedAnswers = { ...answers, [questionId]: value };
-      setResults({ profile: calculateResults(updatedAnswers, flatQuestions) });
+      console.error('Error saving answer:', error);
     }
-  }
-};
+
+    const currentCategoryQuestions = questions[currentCategory].questions;
+    if (currentQuestion + 1 < currentCategoryQuestions.length) {
+      setCurrentQuestion((prev) => prev + 1);
+    } else if (currentCategory + 1 < questions.length) {
+      setCurrentCategory((prev) => prev + 1);
+      setCurrentQuestion(-1);
+    } else {
+      setCurrentCategory(questions.length);
+      setCurrentQuestion(-1);
+      try {
+        const res = await fetch('/api/results', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId }),
+        });
+        const data = await res.json();
+        setResults(data);
+      } catch (error) {
+        console.error('Error fetching results:', error);
+        const updatedAnswers = { ...answers, [questionId]: value };
+        setResults({ profile: calculateResults(updatedAnswers, flatQuestions) });
+      }
+    }
+  };
 
   const startTest = async () => {
     setIsFading(true);
@@ -130,8 +129,8 @@ function App() {
       .filter(([stat]) => profile.maxPoints[stat] > 0)
       .map(([stat, value]) => ({
         stat: stat.charAt(0).toUpperCase() + stat.slice(1),
-        Sinä: value,
-        Keskiarvo: results?.avgStats?.[stat] || 0,
+        'Sinun pisteesi': value,
+        'Vastaajien keskiarvo': results?.avgStats?.[stat] || 0,
       }));
     return chartData;
   };
@@ -247,25 +246,28 @@ function App() {
               </p>
               <div className="text-neutral mb-6">
                 <h3 className="text-lg font-semibold mb-2">Sinun pisteesi ja keskiarvo:</h3>
-                {Object.entries((results?.profile || calculateResults(answers, flatQuestions)).stats)
-                  .filter(([stat]) => (results?.profile || calculateResults(answers, flatQuestions)).maxPoints[stat] > 0)
-                  .map(([stat, value]) => (
-                    <p key={stat}>
-                      {stat.charAt(0).toUpperCase() + stat.slice(1)}: Sinä {value}% | Keskiarvo {results?.avgStats?.[stat] || 0}%
-                    </p>
-                  ))}
-                <div className="h-64 mt-4">
+                <div className="h-64 mt-4 relative">
+                  <style jsx>{`
+                    .nivo-bar-sinun-pisteesi {
+                      z-index: 2;
+                    }
+                    .nivo-bar-vastaajien-keskiarvo {
+                      opacity: 1; /* Slightly transparent for "behind" effect */
+                      z-index: 1;
+                    }
+                  `}</style>
                   <ResponsiveBar
                     data={getChartData()}
-                    keys={['Sinä', 'Keskiarvo']}
+                    keys={['Sinun pisteesi', 'Vastaajien keskiarvo']}
                     indexBy="stat"
                     isInteractive={false}
-                    margin={{ top: 20, right: 60, bottom: 50, left: 30 }}
-                    padding={0.3}
-                    enableGridY={false}
-                    valueScale={{ type: 'linear' }}
-                    indexScale={{ type: 'band', round: true }}
-                    colors={['#1f77b4', '#ff7f0e']} // Blue for Sinä, Orange for Keskiarvo
+                    margin={{ top: 0, right: 30, bottom: 130, left: 30 }}
+                    padding={0.4} // Space between stat groups
+                    innerPadding={2} // Tight spacing for slight overlap effect
+                    groupMode="grouped" // Side-by-side bars
+                    colors={['#1A511F', '#1A711F']} // Blue for Sinun pisteesi, Orange for Vastaajien keskiarvo
+                    borderRadius={4} // Rounded corners
+                    borderWidth={1}
                     borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
                     axisBottom={{
                       tickSize: 5,
@@ -275,6 +277,9 @@ function App() {
                       legendOffset: 32,
                     }}
                     axisLeft={false}
+                    enableGridY={false}
+                    valueScale={{ type: 'linear' }}
+                    indexScale={{ type: 'band', round: true }}
                     labelSkipWidth={12}
                     labelSkipHeight={12}
                     labelTextColor="currentColor"
@@ -284,17 +289,18 @@ function App() {
                     legends={[
                       {
                         dataFrom: 'keys',
-                        anchor: 'bottom-right',
-                        direction: 'column',
-                        justify: false,
-                        translateX: 120,
-                        translateY: 0,
-                        itemsSpacing: 2,
-                        itemWidth: 100,
-                        itemHeight: 20,
-                        itemDirection: 'left-to-right',
-                        itemOpacity: 0.85,
-                        symbolSize: 20,
+                        anchor: 'bottom', // Place below chart
+                        direction: 'row', // Horizontal legend
+                        justify: true, // Center items
+                        translateX: 0, // Center horizontally
+                        translateY: 75, // Move below chart
+                        itemsSpacing: 30, // Spacing between items
+                        itemWidth: 160, // Width for longer labels
+                        itemHeight: 35,
+                        itemDirection: 'top-to-bottom',
+                        itemOpacity: 1,
+                        symbolSize: 16, // Symbol size
+                        symbolSpacing: 2, // Tighter gap between symbol and text
                         effects: [
                           {
                             on: 'hover',
@@ -303,6 +309,30 @@ function App() {
                         ],
                       },
                     ]}
+                    barComponent={({ bar, ...props }) => (
+                      <g transform={`translate(${bar.x}, ${bar.y})`}>
+                        <rect
+                          {...props}
+                          width={bar.width}
+                          height={bar.height}
+                          fill={bar.color}
+                          className={bar.key === 'Sinun pisteesi' ? 'nivo-bar-sinun-pisteesi' : 'nivo-bar-vastaajien-keskiarvo'}
+                        />
+                      </g>
+                    )}
+                    theme={{
+                      axis: {
+                        ticks: {
+                          text: { fontSize: 12, fill: '#333' },
+                        },
+                        legend: {
+                          text: { fontSize: 14, fill: '#333' },
+                        },
+                      },
+                      legends: {
+                        text: { fontSize: 14, fill: '#333' },
+                      },
+                    }}
                   />
                 </div>
               </div>
@@ -323,3 +353,4 @@ function App() {
 }
 
 export default App;
+
