@@ -125,8 +125,9 @@ function App() {
 
   const getChartData = () => {
     const profile = results?.profile || calculateResults(answers, flatQuestions);
+    console.log('profile.stats:', profile.stats, 'avgStats:', results?.avgStats); // Debug values
     const chartData = Object.entries(profile.stats)
-      .filter(([stat]) => profile.maxPoints[stat] > 0)
+      .filter(([stat]) => profile.maxPoints?.[stat] > 0)
       .map(([stat, value]) => ({
         stat: stat.charAt(0).toUpperCase() + stat.slice(1),
         'Sinun pisteesi': value,
@@ -245,15 +246,16 @@ function App() {
                 {(results?.profile || calculateResults(answers, flatQuestions)).description}
               </p>
               <div className="text-neutral mb-6">
-                <h3 className="text-lg font-semibold mb-2">Sinun pisteesi ja keskiarvo:</h3>
-                <div className="h-64 mt-4 relative">
+                <h3 className="text-lg font-semibold mb-2">Sinun pisteesi:</h3>
+                <div className="h-64 mt-4 relative mx-auto">
                   <style jsx>{`
-                    .nivo-bar-sinun-pisteesi {
-                      z-index: 2;
+                    .nivo-bar-sinun-pisteesi, .nivo-bar-vastaajien-keskiarvo {
+                      opacity: 1; /* Full opacity for both bars */
                     }
-                    .nivo-bar-vastaajien-keskiarvo {
-                      opacity: 1; /* Slightly transparent for "behind" effect */
-                      z-index: 1;
+                    .nivo-bar-label {
+                      fill: black; /* Black labels for contrast */
+                      text-shadow: 0 0 2px rgba(255, 255, 255, 0.7); /* White shadow for readability */
+                      font-size: 12px;
                     }
                   `}</style>
                   <ResponsiveBar
@@ -261,14 +263,14 @@ function App() {
                     keys={['Sinun pisteesi', 'Vastaajien keskiarvo']}
                     indexBy="stat"
                     isInteractive={false}
-                    margin={{ top: 0, right: 30, bottom: 130, left: 30 }}
+                    margin={{ top: 40, right: 30, bottom: 130, left: 30 }} // Increased top for labels
                     padding={0.4} // Space between stat groups
-                    innerPadding={2} // Tight spacing for slight overlap effect
+                    innerPadding={2} // Tight spacing for side-by-side bars
                     groupMode="grouped" // Side-by-side bars
-                    colors={['#1A511F', '#1A711F']} // Blue for Sinun pisteesi, Orange for Vastaajien keskiarvo
+                    colors={['#1A511F', '#1A711F']} // Green tones for bars
                     borderRadius={4} // Rounded corners
-                    borderWidth={1}
-                    borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+                    borderWidth={2}
+                    borderColor={'#333F'}
                     axisBottom={{
                       tickSize: 5,
                       tickPadding: 5,
@@ -278,11 +280,13 @@ function App() {
                     }}
                     axisLeft={false}
                     enableGridY={false}
+                    enableLabel={true}
+                    label={(d) => `${Math.round(d.value)}%`} // Display percentage
+                    labelSkipWidth={0} // Show labels regardless of bar width
+                    labelSkipHeight={0} // Show labels regardless of bar height
+                    labelTextColor="black" // Black labels for contrast
                     valueScale={{ type: 'linear' }}
                     indexScale={{ type: 'band', round: true }}
-                    labelSkipWidth={12}
-                    labelSkipHeight={12}
-                    labelTextColor="currentColor"
                     animate={true}
                     motionStiffness={90}
                     motionDamping={15}
@@ -309,17 +313,6 @@ function App() {
                         ],
                       },
                     ]}
-                    barComponent={({ bar, ...props }) => (
-                      <g transform={`translate(${bar.x}, ${bar.y})`}>
-                        <rect
-                          {...props}
-                          width={bar.width}
-                          height={bar.height}
-                          fill={bar.color}
-                          className={bar.key === 'Sinun pisteesi' ? 'nivo-bar-sinun-pisteesi' : 'nivo-bar-vastaajien-keskiarvo'}
-                        />
-                      </g>
-                    )}
                     theme={{
                       axis: {
                         ticks: {
@@ -353,4 +346,3 @@ function App() {
 }
 
 export default App;
-
