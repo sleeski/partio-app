@@ -263,13 +263,13 @@ function App() {
                     keys={['Sinun pisteesi', 'Vastaajien keskiarvo']}
                     indexBy="stat"
                     isInteractive={false}
-                    margin={{ top: 40, right: 30, bottom: 130, left: 30 }} // Increased top for labels
+                    margin={{ top: 0, right: 30, bottom: 120, left: 30 }} // Increased top for labels
                     padding={0.4} // Space between stat groups
                     innerPadding={2} // Tight spacing for side-by-side bars
                     groupMode="grouped" // Side-by-side bars
                     colors={['#1A511F', '#1A711F']} // Green tones for bars
-                    borderRadius={4} // Rounded corners
-                    borderWidth={2}
+                    borderRadius={0} // Rounded corners
+                    borderWidth={0}
                     borderColor={'#333F'}
                     axisBottom={{
                       tickSize: 5,
@@ -284,7 +284,7 @@ function App() {
                     label={(d) => `${Math.round(d.value)}%`} // Display percentage
                     labelSkipWidth={0} // Show labels regardless of bar width
                     labelSkipHeight={0} // Show labels regardless of bar height
-                    labelTextColor="black" // Black labels for contrast
+                    labelTextColor="white" // Black labels for contrast
                     valueScale={{ type: 'linear' }}
                     indexScale={{ type: 'band', round: true }}
                     animate={true}
