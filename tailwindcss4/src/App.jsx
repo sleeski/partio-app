@@ -265,15 +265,20 @@ function App() {
                   </div>
                   <div className="text-neutral mb-6">
                     <h3 className="text-lg font-semibold mb-2">Sinun pisteesi:</h3>
-                    <div className="h-64 mt-4 relative mx-auto">
+                    <div className="h-64 mt-4 relative mx-auto w-full">
                       <style jsx>{`
                         .nivo-bar-sinun-pisteesi, .nivo-bar-vastaajien-keskiarvo {
                           opacity: 1; /* Full opacity for both bars */
                         }
                         .nivo-bar-label {
-                          fill: black; /* Black labels for contrast */
+                          fill: #333; /* Darker labels for contrast */
                           text-shadow: 0 0 2px rgba(255, 255, 255, 0.7); /* White shadow for readability */
-                          font-size: 12px;
+                          font-size: 10px; /* Smaller font size for mobile */
+                        }
+                        @media (min-width: 640px) {
+                          .nivo-bar-label {
+                            font-size: 12px; /* Larger font for desktop */
+                          }
                         }
                       `}</style>
                       <ResponsiveBar
@@ -281,18 +286,23 @@ function App() {
                         keys={['Sinun pisteesi', 'Vastaajien keskiarvo']}
                         indexBy="stat"
                         isInteractive={false}
-                        margin={{ top: 0, right: 30, bottom: 120, left: 30 }} // Increased top for labels
-                        padding={0.4} // Space between stat groups
-                        innerPadding={2} // Tight spacing for side-by-side bars
+                        margin={{
+                          top: 20, // Increased top margin for labels
+                          right: 20, // Reduced for mobile
+                          bottom: window.innerWidth < 640 ? 100 : 120, // Smaller bottom margin on mobile
+                          left: 20, // Reduced for mobile
+                        }}
+                        padding={window.innerWidth < 640 ? 0.2 : 0.4} // Tighter padding on mobile
+                        innerPadding={window.innerWidth < 640 ? 1 : 2} // Tighter inner padding on mobile
                         groupMode="grouped" // Side-by-side bars
                         colors={['#1A511F', '#1A711F']} // Green tones for bars
-                        borderRadius={0} // Rounded corners
+                        borderRadius={0}
                         borderWidth={0}
                         borderColor={'#333F'}
                         axisBottom={{
                           tickSize: 5,
                           tickPadding: 5,
-                          tickRotation: 0,
+                          tickRotation: window.innerWidth < 640 ? 45 : 0, // Rotate labels on mobile for better fit
                           legendPosition: 'middle',
                           legendOffset: 32,
                         }}
@@ -300,9 +310,9 @@ function App() {
                         enableGridY={false}
                         enableLabel={true}
                         label={(d) => `${Math.round(d.value)}%`} // Display percentage
-                        labelSkipWidth={0} // Show labels regardless of bar width
-                        labelSkipHeight={0} // Show labels regardless of bar height
-                        labelTextColor="white" // Black labels for contrast
+                        labelSkipWidth={window.innerWidth < 640 ? 20 : 0} // Skip labels on narrow bars for mobile
+                        labelSkipHeight={0}
+                        labelTextColor="#333" // Darker labels for contrast
                         valueScale={{ type: 'linear' }}
                         indexScale={{ type: 'band', round: true }}
                         animate={true}
@@ -311,18 +321,18 @@ function App() {
                         legends={[
                           {
                             dataFrom: 'keys',
-                            anchor: 'bottom', // Place below chart
-                            direction: 'row', // Horizontal legend
-                            justify: true, // Center items
-                            translateX: 0, // Center horizontally
-                            translateY: 75, // Move below chart
-                            itemsSpacing: 30, // Spacing between items
-                            itemWidth: 160, // Width for longer labels
-                            itemHeight: 35,
-                            itemDirection: 'top-to-bottom',
+                            anchor: window.innerWidth < 640 ? 'top' : 'bottom', // Move legend to top on mobile
+                            direction: window.innerWidth < 640 ? 'column' : 'row', // Stack legend items vertically on mobile
+                            justify: false,
+                            translateX: 0,
+                            translateY: window.innerWidth < 640 ? -20 : 75, // Adjust position for mobile
+                            itemsSpacing: window.innerWidth < 640 ? 10 : 30, // Tighter spacing on mobile
+                            itemWidth: window.innerWidth < 640 ? 120 : 160, // Smaller item width on mobile
+                            itemHeight: 20, // Reduced height for mobile
+                            itemDirection: 'left-to-right',
                             itemOpacity: 1,
-                            symbolSize: 16, // Symbol size
-                            symbolSpacing: 2, // Tighter gap between symbol and text
+                            symbolSize: window.innerWidth < 640 ? 12 : 16, // Smaller symbol on mobile
+                            symbolSpacing: 2,
                             effects: [
                               {
                                 on: 'hover',
@@ -334,14 +344,14 @@ function App() {
                         theme={{
                           axis: {
                             ticks: {
-                              text: { fontSize: 12, fill: '#333' },
+                              text: { fontSize: window.innerWidth < 640 ? 10 : 12, fill: '#333' },
                             },
                             legend: {
-                              text: { fontSize: 14, fill: '#333' },
+                              text: { fontSize: window.innerWidth < 640 ? 12 : 14, fill: '#333' },
                             },
                           },
                           legends: {
-                            text: { fontSize: 14, fill: '#333' },
+                            text: { fontSize: window.innerWidth < 640 ? 12 : 14, fill: '#333' },
                           },
                         }}
                       />
