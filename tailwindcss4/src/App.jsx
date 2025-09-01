@@ -59,6 +59,7 @@ function App() {
           body: JSON.stringify({ userId }),
         });
         const data = await res.json();
+        console.log('API results:', data); // Log API response
         setResults(data);
       } catch (error) {
         console.error('Error fetching results:', error);
@@ -125,7 +126,11 @@ function App() {
 
   const getChartData = () => {
     const profile = results?.profile || calculateResults(answers, flatQuestions);
-    console.log('profile.stats:', profile.stats, 'avgStats:', results?.avgStats); // Debug values
+    console.log('getChartData - profile.stats:', profile.stats, 'avgStats:', results?.avgStats); // Debug values
+    if (!profile.stats) {
+      console.error('getChartData - No stats available:', profile);
+      return [];
+    }
     const chartData = Object.entries(profile.stats)
       .filter(([stat]) => profile.maxPoints?.[stat] > 0)
       .map(([stat, value]) => ({
@@ -133,6 +138,7 @@ function App() {
         'Sinun pisteesi': value,
         'Vastaajien keskiarvo': results?.avgStats?.[stat] || 0,
       }));
+    console.log('getChartData - chartData:', chartData); // Log chart data
     return chartData;
   };
 
@@ -230,113 +236,127 @@ function App() {
             </div>
           ) : (
             <div className="text-center flex-1">
-              <h1 className="text-2xl font-bold mb-4 text-neutral">
-                Sinä olet...
-              </h1>
-              <img
-                src={(results?.profile || calculateResults(answers, flatQuestions)).image}
-                alt={(results?.profile || calculateResults(answers, flatQuestions)).title}
-                className="mx-auto mb-6 max-w-full h-auto rounded-md"
-                style={{ maxHeight: '200px' }}
-              />
-              <h2 className="text-xl font-semibold mb-4 text-neutral">
-                {(results?.profile || calculateResults(answers, flatQuestions)).title}
-              </h2>
-              <p className="text-neutral mb-6">
-                {(results?.profile || calculateResults(answers, flatQuestions)).description}
-              </p>
-              <div className="text-neutral mb-6">
-                <h3 className="text-lg font-semibold mb-2">Sinun pisteesi:</h3>
-                <div className="h-64 mt-4 relative mx-auto">
-                  <style jsx>{`
-                    .nivo-bar-sinun-pisteesi, .nivo-bar-vastaajien-keskiarvo {
-                      opacity: 1; /* Full opacity for both bars */
-                    }
-                    .nivo-bar-label {
-                      fill: black; /* Black labels for contrast */
-                      text-shadow: 0 0 2px rgba(255, 255, 255, 0.7); /* White shadow for readability */
-                      font-size: 12px;
-                    }
-                  `}</style>
-                  <ResponsiveBar
-                    data={getChartData()}
-                    keys={['Sinun pisteesi', 'Vastaajien keskiarvo']}
-                    indexBy="stat"
-                    isInteractive={false}
-                    margin={{ top: 0, right: 30, bottom: 120, left: 30 }} // Increased top for labels
-                    padding={0.4} // Space between stat groups
-                    innerPadding={2} // Tight spacing for side-by-side bars
-                    groupMode="grouped" // Side-by-side bars
-                    colors={['#1A511F', '#1A711F']} // Green tones for bars
-                    borderRadius={0} // Rounded corners
-                    borderWidth={0}
-                    borderColor={'#333F'}
-                    axisBottom={{
-                      tickSize: 5,
-                      tickPadding: 5,
-                      tickRotation: 0,
-                      legendPosition: 'middle',
-                      legendOffset: 32,
-                    }}
-                    axisLeft={false}
-                    enableGridY={false}
-                    enableLabel={true}
-                    label={(d) => `${Math.round(d.value)}%`} // Display percentage
-                    labelSkipWidth={0} // Show labels regardless of bar width
-                    labelSkipHeight={0} // Show labels regardless of bar height
-                    labelTextColor="white" // Black labels for contrast
-                    valueScale={{ type: 'linear' }}
-                    indexScale={{ type: 'band', round: true }}
-                    animate={true}
-                    motionStiffness={90}
-                    motionDamping={15}
-                    legends={[
-                      {
-                        dataFrom: 'keys',
-                        anchor: 'bottom', // Place below chart
-                        direction: 'row', // Horizontal legend
-                        justify: true, // Center items
-                        translateX: 0, // Center horizontally
-                        translateY: 75, // Move below chart
-                        itemsSpacing: 30, // Spacing between items
-                        itemWidth: 160, // Width for longer labels
-                        itemHeight: 35,
-                        itemDirection: 'top-to-bottom',
-                        itemOpacity: 1,
-                        symbolSize: 16, // Symbol size
-                        symbolSpacing: 2, // Tighter gap between symbol and text
-                        effects: [
-                          {
-                            on: 'hover',
-                            style: { itemOpacity: 1 },
-                          },
-                        ],
-                      },
-                    ]}
-                    theme={{
-                      axis: {
-                        ticks: {
-                          text: { fontSize: 12, fill: '#333' },
-                        },
-                        legend: {
-                          text: { fontSize: 14, fill: '#333' },
-                        },
-                      },
-                      legends: {
-                        text: { fontSize: 14, fill: '#333' },
-                      },
-                    }}
-                  />
+              {!results?.profile ? (
+                <div className="text-neutral mb-6">
+                  <p className="text-lg">Ladataan tuloksia...</p>
                 </div>
-              </div>
-              <button
-                onClick={() => {
-                  window.location.reload();
-                }}
-                className="px-6 py-3 bg-primary text-white rounded-md hover:bg-neutral-content hover:text-neutral transition-colors text-lg font-semibold border-2 border-neutral"
-              >
-                Takaisin alkuun
-              </button>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-bold mb-4 text-neutral">
+                    Sinä olet...
+                  </h1>
+                  <img
+                    src={(results?.profile || calculateResults(answers, flatQuestions)).image}
+                    alt={(results?.profile || calculateResults(answers, flatQuestions)).title}
+                    className="mx-auto mb-6 max-w-full h-auto rounded-md"
+                    style={(results?.profile || calculateResults(answers, flatQuestions)).title === 'Vaakkuva Kuukkeli!' ? 
+                      { maxHeight: '300px', imageRendering: 'auto' } : 
+                      { maxHeight: '300px' }}
+                  />
+                  <h2 className="text-xl font-semibold mb-4 text-neutral">
+                    {(results?.profile || calculateResults(answers, flatQuestions)).title}
+                  </h2>
+                  <div className="text-neutral mb-6">
+                    {(results?.profile || calculateResults(answers, flatQuestions)).description.map((paragraph, index) => (
+                      <p key={index} className="text-neutral mb-4 last:mb-0">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                  <div className="text-neutral mb-6">
+                    <h3 className="text-lg font-semibold mb-2">Sinun pisteesi:</h3>
+                    <div className="h-64 mt-4 relative mx-auto">
+                      <style jsx>{`
+                        .nivo-bar-sinun-pisteesi, .nivo-bar-vastaajien-keskiarvo {
+                          opacity: 1; /* Full opacity for both bars */
+                        }
+                        .nivo-bar-label {
+                          fill: black; /* Black labels for contrast */
+                          text-shadow: 0 0 2px rgba(255, 255, 255, 0.7); /* White shadow for readability */
+                          font-size: 12px;
+                        }
+                      `}</style>
+                      <ResponsiveBar
+                        data={getChartData()}
+                        keys={['Sinun pisteesi', 'Vastaajien keskiarvo']}
+                        indexBy="stat"
+                        isInteractive={false}
+                        margin={{ top: 0, right: 30, bottom: 120, left: 30 }} // Increased top for labels
+                        padding={0.4} // Space between stat groups
+                        innerPadding={2} // Tight spacing for side-by-side bars
+                        groupMode="grouped" // Side-by-side bars
+                        colors={['#1A511F', '#1A711F']} // Green tones for bars
+                        borderRadius={0} // Rounded corners
+                        borderWidth={0}
+                        borderColor={'#333F'}
+                        axisBottom={{
+                          tickSize: 5,
+                          tickPadding: 5,
+                          tickRotation: 0,
+                          legendPosition: 'middle',
+                          legendOffset: 32,
+                        }}
+                        axisLeft={false}
+                        enableGridY={false}
+                        enableLabel={true}
+                        label={(d) => `${Math.round(d.value)}%`} // Display percentage
+                        labelSkipWidth={0} // Show labels regardless of bar width
+                        labelSkipHeight={0} // Show labels regardless of bar height
+                        labelTextColor="white" // Black labels for contrast
+                        valueScale={{ type: 'linear' }}
+                        indexScale={{ type: 'band', round: true }}
+                        animate={true}
+                        motionStiffness={90}
+                        motionDamping={15}
+                        legends={[
+                          {
+                            dataFrom: 'keys',
+                            anchor: 'bottom', // Place below chart
+                            direction: 'row', // Horizontal legend
+                            justify: true, // Center items
+                            translateX: 0, // Center horizontally
+                            translateY: 75, // Move below chart
+                            itemsSpacing: 30, // Spacing between items
+                            itemWidth: 160, // Width for longer labels
+                            itemHeight: 35,
+                            itemDirection: 'top-to-bottom',
+                            itemOpacity: 1,
+                            symbolSize: 16, // Symbol size
+                            symbolSpacing: 2, // Tighter gap between symbol and text
+                            effects: [
+                              {
+                                on: 'hover',
+                                style: { itemOpacity: 1 },
+                              },
+                            ],
+                          },
+                        ]}
+                        theme={{
+                          axis: {
+                            ticks: {
+                              text: { fontSize: 12, fill: '#333' },
+                            },
+                            legend: {
+                              text: { fontSize: 14, fill: '#333' },
+                            },
+                          },
+                          legends: {
+                            text: { fontSize: 14, fill: '#333' },
+                          },
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      window.location.reload();
+                    }}
+                    className="px-6 py-3 bg-primary text-white rounded-md hover:bg-neutral-content hover:text-neutral transition-colors text-lg font-semibold border-2 border-neutral"
+                  >
+                    Takaisin alkuun
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
