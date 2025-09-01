@@ -111,8 +111,9 @@ export const calculateResults = (answers, questions) => {
       selected = {
         title: "Vaakkuva Kuukkeli!",
         description: [
-          "Olet monipuolinen partiolainen, jolla on tasapainoiset kiinnostukset kaikilla alueilla.",
-          "Sinulla on useita vahvuuksia, jotka tekevät sinusta monitaitoisen partiolaisen."
+          "Olet tasapainoinen partiolainen, joka nauttii kaikista partion puolista yhtä paljon. Sinulle partio ei ole vain luontoa, kavereita, erätaitoja tai vapaaehtoistyötä, vaan kaikkea tätä yhdessä sopivassa sekoituksessa – kuin irtokarkkipussi täynnä lemppareita.",
+          "Nautit tapahtumasta kuin tapahtumasta. Kesällä saatat löytää itsesi piirileiriltä, syksyllä kisaamasta hiki otsalla ja arkipäivinä ihan tavallisesta viikkokokouksesta. Tiedät myös, että hyvä tasapaino syntyy levosta, ja siksi otat aikaa myös muulle kuin partiolle.",
+          "Sinulle partion suurin rikkaus on sen monipuolisuus, joka tarjoaa mahdollisuuden tehdä oikeastaan mitä vain. Yhtenä päivänä partio on sinulle luonnosta nauttimista, toisena taitojen teroittamista ja kolmantena ansiomerkeillä leveilyä – ja kaikki tämä hyvässä seurassa!"
         ],
         image: "/images/kuukkeli.webp"
       };
