@@ -54,7 +54,7 @@ export default [
         ]
       },
       {
-        text: "On aina mahtavaa tavata uusia ihmisiä Partiossa.",
+        text: "On aina mahtavaa tavata uusia ihmisiä partiossa.",
         options: [
           { value: 1, label: "Täysin eri mieltä", stats: { kaverit: -2 } },
           { value: 2, label: "Jokseenkin eri mieltä", stats: { kaverit: -1 } },
@@ -74,7 +74,7 @@ export default [
         ]
       },
       {
-        text: "Minulla tuskin riittää vapaa-aikaa kaikkien pestieni vuoksi.",
+        text: "Minulla tuskin riittää vapaa-aikaa kaikkien partiopestieni vuoksi.",
         options: [
           { value: 1, label: "Täysin eri mieltä", stats: { järjestö: -2 } },
           { value: 2, label: "Jokseenkin eri mieltä", stats: { järjestö: -1 } },
@@ -200,7 +200,7 @@ export default [
         ]
       },
       {
-        text: "Ykköstavoitteeni Partiossa on...",
+        text: "Ykköstavoitteeni partiossa on...",
         options: [
           { value: 1, label: "Ko-Gi-kurssi ja Hopeasusi", stats: { järjestö: 2 } },
           { value: 2, label: "partiotaitojen Suomen-mestaruus", stats: { partiotaidot: 2 } },
