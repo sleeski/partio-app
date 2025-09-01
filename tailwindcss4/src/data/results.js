@@ -86,8 +86,9 @@ export const calculateResults = (answers, questions) => {
     selected = {
       title: "Vaakkuva Kuukkeli!",
       description: [
-        "Olet monipuolinen partiolainen, jolla on tasapainoiset kiinnostukset kaikilla alueilla.",
-        "Nautit partiosta monella tavalla, olipa kyse luonnosta, taidoista, järjestötoiminnasta tai kavereista."
+        "Olet tasapainoinen partiolainen, joka nauttii kaikista partion puolista yhtä paljon. Sinulle partio ei ole vain luontoa, kavereita, erätaitoja tai vapaaehtoistyötä, vaan kaikkea tätä yhdessä sopivassa sekoituksessa – kuin irtokarkkipussi täynnä lemppareita.",
+        "Nautit tapahtumasta kuin tapahtumasta. Kesällä saatat löytää itsesi piirileiriltä, syksyllä kisaamasta hiki otsalla ja arkipäivinä ihan tavallisesta viikkokokouksesta. Tiedät myös, että hyvä tasapaino syntyy levosta, ja siksi otat aikaa myös muulle kuin partiolle.",
+        "Sinulle partion suurin rikkaus on sen monipuolisuus, joka tarjoaa mahdollisuuden tehdä oikeastaan mitä vain. Yhtenä päivänä partio on sinulle luonnosta nauttimista, toisena taitojen teroittamista ja kolmantena ansiomerkeillä leveilyä – ja kaikki tämä hyvässä seurassa!"
       ],
       image: "/images/kuukkeli.webp"
     };
@@ -142,7 +143,7 @@ export const calculateResults = (answers, questions) => {
         järjestö: {
           title: "Viisas Vervetti!",
           description: [
-            "Sinulle Partiossa tärkeintä on itse Partioliike ja sen symboliikka. Olet liikkeen kivijalka, sen liekin vartija ja kunnianhimoinen sanansaattaja. Keräät ansiomerkkejä kuin teekkari haalarimerkkejä orientaatioviikolla. Merkkejä on paidassasi jo niin paksu kerros, että se toimii luotiliivinä. Lippukuntapestisi käyvät kuin investointipankkiirin työstä. PJPK:n johtamistehtäväksi aloitit luonnollisesti pienellä: koko maailmanjamboreen johtamisella.",
+            "Sinulle partiossa tärkeintä on itse Partioliike ja sen symboliikka. Olet liikkeen kivijalka, sen liekin vartija ja kunnianhimoinen sanansaattaja. Keräät ansiomerkkejä kuin teekkari haalarimerkkejä orientaatioviikolla. Merkkejä on paidassasi jo niin paksu kerros, että se toimii luotiliivinä. Lippukuntapestisi käyvät kuin investointipankkiirin työstä. PJPK:n johtamistehtäväksi aloitit luonnollisesti pienellä: koko maailmanjamboreen johtamisella.",
             "Unelmoit Partioliikkeen Maailmanjärjestön pääsihteerin tehtävistä, ja Hopeasusi on jo postissa. Osaat Partiopojan käsikirjan ulkoa niin tarkasti, että voisit lausua sen takaperin unissasi. Elät järkähtämättä partiolain mukaan: yhtään valhetta ei suustasi ole kuultu — eikä tulla kuulemaan eläessäsi.",
             "Rauhanliikkeen edistäminen on sinulle elämäntyö. Ei olisi ihme, jos voittaisit Nobelin rauhanpalkinnon, mutta tuskin jaksaisit sitä noutaa; eihän sitä edes saa partiopaitaan kiinni!"
           ],

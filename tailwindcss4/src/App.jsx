@@ -13,6 +13,7 @@ function App() {
   const [answers, setAnswers] = useState({});
   const [userId, setUserId] = useState(null);
   const [results, setResults] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
 
   const flatQuestions = questions.flatMap((category, catIndex) =>
     category.questions.map((question, qIndex) => ({
@@ -59,7 +60,7 @@ function App() {
           body: JSON.stringify({ userId }),
         });
         const data = await res.json();
-        console.log('API results:', data); // Log API response
+        console.log('API results:', data);
         setResults(data);
       } catch (error) {
         console.error('Error fetching results:', error);
@@ -124,9 +125,15 @@ function App() {
     }
   }, [displayCategory]);
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const getChartData = () => {
     const profile = results?.profile || calculateResults(answers, flatQuestions);
-    console.log('getChartData - profile.stats:', profile.stats, 'avgStats:', results?.avgStats); // Debug values
+    console.log('getChartData - profile.stats:', profile.stats, 'avgStats:', results?.avgStats);
     if (!profile.stats) {
       console.error('getChartData - No stats available:', profile);
       return [];
@@ -138,238 +145,252 @@ function App() {
         'Sinun pisteesi': value,
         'Vastaajien keskiarvo': results?.avgStats?.[stat] || 0,
       }));
-    console.log('getChartData - chartData:', chartData); // Log chart data
+    console.log('getChartData - chartData:', chartData);
     return chartData;
   };
 
   return (
-    <div className={displayCategory >= questions.length ? "min-h-screen bg-base-200 flex justify-center p-4" : "h-screen w-screen bg-base-200 flex items-center justify-center p-4"}>
-      <div className={
-        displayCategory >= questions.length || displayCategory === -1 ? "bg-base-100 rounded-box p-6 max-w-md w-full border-3" :
-        "bg-base-100 rounded-box p-6 max-w-lg w-full min-h-[500px] border-3"
-      }>
-        <div className={`transition-opacity duration-500 ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'} ${displayCategory < questions.length ? 'min-h-[500px] flex flex-col' : 'flex-1 flex flex-col'}`}>
-          {displayCategory === -1 ? (
-            <div className="text-center flex-1 flex flex-col justify-center">
-              <svg
-                viewBox="0 0 3275.59 3275.59"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                className="w-20 h-20 text-primary mx-auto mb-4"
-              >
-                <rect
-                  width="1156.34"
-                  height="1156.34"
+    <div className="flex flex-col min-h-screen">
+      <div className={displayCategory >= questions.length ? "flex justify-center p-4 flex-grow" : "h-screen w-screen flex items-center justify-center p-4"}>
+        <div className={
+          displayCategory >= questions.length || displayCategory === -1 ? "bg-base-100 rounded-box p-6 max-w-md w-full border-3" :
+          "bg-base-100 rounded-box p-6 max-w-lg w-full min-h-[500px] border-3"
+        }>
+          <div className={`transition-opacity duration-500 ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'} ${displayCategory < questions.length ? 'min-h-[500px] flex flex-col' : 'flex-1 flex flex-col'}`}>
+            {displayCategory === -1 ? (
+              <div className="text-center flex-1 flex flex-col justify-center">
+                <svg
+                  viewBox="0 0 3275.59 3275.59"
+                  xmlns="http://www.w3.org/2000/svg"
                   fill="currentColor"
-                  transform="matrix(1.41636 1.41636 -1.41636 1.41636 1637.79 -0.0012774)"
-                />
-                <path
-                  fill="#FEFEFE"
-                  fillRule="nonzero"
-                  d="M1864.79 1914.34l-185.73 185.73 472.04 472.04 934.31 -934.32 -185.72 -185.72 -748.61 748.61 -286.3 -286.34zm-276.27 -276.24l-185.72 -185.72 -185.73 185.73 185.73 185.72 185.72 -185.72zm279.4 -186.03l-748.6 748.61 -743.43 -748.6 -185.72 185.72 929.15 934.32 934.33 -934.33 -185.72 -185.72z"
-                />
-              </svg>
-              <p className="text-xl font-bold text-neutral mb-4">ViVeStart 2025</p>
-              <h1 className="text-3xl font-bold mb-4 text-neutral">
-                Minkälainen partiolainen olet?
-              </h1>
-              <p className="text-neutral mb-6">
-                Viikin Vesikoiden kysely auttaa sinua löytämään juuri sinulle sopivan tien partiossa. Vastaa kysymyksiin ja selvitä oma partioprofiilisi!
-              </p>
-              <button
-                onClick={startTest}
-                className="px-6 py-3 bg-primary text-white rounded-md hover:bg-neutral-content hover:text-neutral transition-colors text-lg font-semibold border-2 border-neutral"
-              >
-                Aloita
-              </button>
-            </div>
-          ) : displayCategory < questions.length && displayQuestion === -1 ? (
-            <div className="relative flex flex-col grow">
-              <button onClick={goBack} className="btn btn-ghost mb-4 absolute top-0 left-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-icon lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-                Takaisin
-              </button>
-              <div className="flex-1 flex flex-col justify-center text-center">
-                <h2 className="text-2xl font-bold text-neutral">
-                  {ordinalPrefixes[displayCategory]} osa:
-                </h2>
-                <h2 className="text-2xl font-bold mb-4 text-neutral">
-                  {questions[displayCategory].category}
-                </h2>
-                <p className="text-neutral mb-6">
-                  {questions[displayCategory].subtitle}
-                </p>
-              </div>
-              <div className="mt-auto">
-                <button
-                  onClick={continueToQuestions}
-                  className="btn btn-neutral w-full border-2 border-black"
+                  className="w-20 h-20 text-primary mx-auto mb-4"
                 >
-                  Jatka 
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right-icon lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  <rect
+                    width="1156.34"
+                    height="1156.34"
+                    fill="currentColor"
+                    transform="matrix(1.41636 1.41636 -1.41636 1.41636 1637.79 -0.0012774)"
+                  />
+                  <path
+                    fill="#FEFEFE"
+                    fillRule="nonzero"
+                    d="M1864.79 1914.34l-185.73 185.73 472.04 472.04 934.31 -934.32 -185.72 -185.72 -748.61 748.61 -286.3 -286.34zm-276.27 -276.24l-185.72 -185.72 -185.73 185.73 185.73 185.72 185.72 -185.72zm279.4 -186.03l-748.6 748.61 -743.43 -748.6 -185.72 185.72 929.15 934.32 934.33 -934.33 -185.72 -185.72z"
+                  />
+                </svg>
+                <p className="text-xl font-bold text-neutral mb-4">ViVeStart 2025</p>
+                <h1 className="text-3xl font-bold mb-4 text-neutral">
+                  Minkälainen partiolainen olet?
+                </h1>
+                <p className="text-neutral mb-6">
+                  Viikin Vesikoiden kysely auttaa sinua löytämään juuri sinulle sopivan tien partiossa. Vastaa kysymyksiin ja selvitä oma partioprofiilisi!
+                </p>
+                <button
+                  onClick={startTest}
+                  className="px-6 py-3 bg-primary text-white rounded-md hover:bg-neutral-content hover:text-neutral transition-colors text-lg font-semibold border-2 border-neutral"
+                >
+                  Aloita
                 </button>
               </div>
-            </div>
-          ) : displayCategory < questions.length ? (
-            <div className="flex flex-col grow">
-              <div className="grow">
-                <button onClick={goBack} className="btn btn-ghost mb-4">
+            ) : displayCategory < questions.length && displayQuestion === -1 ? (
+              <div className="relative flex flex-col grow">
+                <button onClick={goBack} className="btn btn-ghost mb-4 absolute top-0 left-0">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-icon lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
                   Takaisin
                 </button>
-                <h2 className="text-lg font-semibold mb-4 text-neutral">
-                  {questions[displayCategory].category}: {displayQuestion + 1}/{questions[displayCategory].questions.length}
-                </h2>
-                <p className="text-neutral mb-6">{questions[displayCategory].questions[displayQuestion].text}</p>
-              </div>
-              <div className="mt-auto space-y-3">
-                {questions[displayCategory].questions[displayQuestion].options.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => handleAnswer(`category${displayCategory}_question${displayQuestion}`, option.value)}
-                    className="btn btn-neutral w-full p-3 border-2 border-black"
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="text-center flex-1">
-              {!results?.profile ? (
-                <div className="text-neutral mb-6">
-                  <p className="text-lg">Ladataan tuloksia...</p>
-                </div>
-              ) : (
-                <>
-                  <h1 className="text-2xl font-bold mb-4 text-neutral">
-                    Sinä olet...
-                  </h1>
-                  <img
-                    src={(results?.profile || calculateResults(answers, flatQuestions)).image}
-                    alt={(results?.profile || calculateResults(answers, flatQuestions)).title}
-                    className="mx-auto mb-6 max-w-full h-auto rounded-md"
-                    style={(results?.profile || calculateResults(answers, flatQuestions)).title === 'Vaakkuva Kuukkeli!' ? 
-                      { maxHeight: '300px', imageRendering: 'auto' } : 
-                      { maxHeight: '300px' }}
-                  />
-                  <h2 className="text-xl font-semibold mb-4 text-neutral">
-                    {(results?.profile || calculateResults(answers, flatQuestions)).title}
+                <div className="flex-1 flex flex-col justify-center text-center">
+                  <h2 className="text-2xl font-bold text-neutral">
+                    {ordinalPrefixes[displayCategory]} osa:
                   </h2>
-                  <div className="text-neutral mb-6">
-                    {(results?.profile || calculateResults(answers, flatQuestions)).description.map((paragraph, index) => (
-                      <p key={index} className="text-neutral mb-4 last:mb-0">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                  <div className="text-neutral mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Sinun pisteesi:</h3>
-                    <div className="h-64 mt-4 relative mx-auto w-full">
-                      <style jsx>{`
-                        .nivo-bar-sinun-pisteesi, .nivo-bar-vastaajien-keskiarvo {
-                          opacity: 1; /* Full opacity for both bars */
-                        }
-                        .nivo-bar-label {
-                          fill: #333; /* Darker labels for contrast */
-                          text-shadow: 0 0 2px rgba(255, 255, 255, 0.7); /* White shadow for readability */
-                          font-size: 10px; /* Smaller font size for mobile */
-                        }
-                        @media (min-width: 640px) {
-                          .nivo-bar-label {
-                            font-size: 12px; /* Larger font for desktop */
-                          }
-                        }
-                      `}</style>
-                      <ResponsiveBar
-                        data={getChartData()}
-                        keys={['Sinun pisteesi', 'Vastaajien keskiarvo']}
-                        indexBy="stat"
-                        isInteractive={false}
-                        margin={{
-                          top: 20, // Increased top margin for labels
-                          right: 20, // Reduced for mobile
-                          bottom: window.innerWidth < 640 ? 100 : 120, // Smaller bottom margin on mobile
-                          left: 20, // Reduced for mobile
-                        }}
-                        padding={window.innerWidth < 640 ? 0.2 : 0.4} // Tighter padding on mobile
-                        innerPadding={window.innerWidth < 640 ? 1 : 2} // Tighter inner padding on mobile
-                        groupMode="grouped" // Side-by-side bars
-                        colors={['#1A511F', '#1A711F']} // Green tones for bars
-                        borderRadius={0}
-                        borderWidth={0}
-                        borderColor={'#333F'}
-                        axisBottom={{
-                          tickSize: 5,
-                          tickPadding: 5,
-                          tickRotation: window.innerWidth < 640 ? 45 : 0, // Rotate labels on mobile for better fit
-                          legendPosition: 'middle',
-                          legendOffset: 32,
-                        }}
-                        axisLeft={false}
-                        enableGridY={false}
-                        enableLabel={true}
-                        label={(d) => `${Math.round(d.value)}%`} // Display percentage
-                        labelSkipWidth={window.innerWidth < 640 ? 20 : 0} // Skip labels on narrow bars for mobile
-                        labelSkipHeight={0}
-                        labelTextColor="#333" // Darker labels for contrast
-                        valueScale={{ type: 'linear' }}
-                        indexScale={{ type: 'band', round: true }}
-                        animate={true}
-                        motionStiffness={90}
-                        motionDamping={15}
-                        legends={[
-                          {
-                            dataFrom: 'keys',
-                            anchor: window.innerWidth < 640 ? 'top' : 'bottom', // Move legend to top on mobile
-                            direction: window.innerWidth < 640 ? 'column' : 'row', // Stack legend items vertically on mobile
-                            justify: false,
-                            translateX: 0,
-                            translateY: window.innerWidth < 640 ? -20 : 75, // Adjust position for mobile
-                            itemsSpacing: window.innerWidth < 640 ? 10 : 30, // Tighter spacing on mobile
-                            itemWidth: window.innerWidth < 640 ? 120 : 160, // Smaller item width on mobile
-                            itemHeight: 20, // Reduced height for mobile
-                            itemDirection: 'left-to-right',
-                            itemOpacity: 1,
-                            symbolSize: window.innerWidth < 640 ? 12 : 16, // Smaller symbol on mobile
-                            symbolSpacing: 2,
-                            effects: [
-                              {
-                                on: 'hover',
-                                style: { itemOpacity: 1 },
-                              },
-                            ],
-                          },
-                        ]}
-                        theme={{
-                          axis: {
-                            ticks: {
-                              text: { fontSize: window.innerWidth < 640 ? 10 : 12, fill: '#333' },
-                            },
-                            legend: {
-                              text: { fontSize: window.innerWidth < 640 ? 12 : 14, fill: '#333' },
-                            },
-                          },
-                          legends: {
-                            text: { fontSize: window.innerWidth < 640 ? 12 : 14, fill: '#333' },
-                          },
-                        }}
-                      />
-                    </div>
-                  </div>
+                  <h2 className="text-2xl font-bold mb-4 text-neutral">
+                    {questions[displayCategory].category}
+                  </h2>
+                  <p className="text-neutral mb-6">
+                    {questions[displayCategory].subtitle}
+                  </p>
+                </div>
+                <div className="mt-auto">
                   <button
-                    onClick={() => {
-                      window.location.reload();
-                    }}
-                    className="px-6 py-3 bg-primary text-white rounded-md hover:bg-neutral-content hover:text-neutral transition-colors text-lg font-semibold border-2 border-neutral"
+                    onClick={continueToQuestions}
+                    className="btn btn-neutral w-full border-2 border-black"
                   >
-                    Takaisin alkuun
+                    Jatka 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right-icon lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </button>
-                </>
-              )}
-            </div>
-          )}
+                </div>
+              </div>
+            ) : displayCategory < questions.length ? (
+              <div className="flex flex-col grow">
+                <div className="grow">
+                  <button onClick={goBack} className="btn btn-ghost mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-icon lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                    Takaisin
+                  </button>
+                  <h2 className="text-lg font-semibold mb-4 text-neutral">
+                    {questions[displayCategory].category}: {displayQuestion + 1}/{questions[displayCategory].questions.length}
+                  </h2>
+                  <p className="text-neutral mb-6">{questions[displayCategory].questions[displayQuestion].text}</p>
+                </div>
+                <div className="mt-auto space-y-3">
+                  {questions[displayCategory].questions[displayQuestion].options.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => handleAnswer(`category${displayCategory}_question${displayQuestion}`, option.value)}
+                      className="btn btn-neutral w-full p-3 border-2 border-black"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center flex-1">
+                {!results?.profile ? (
+                  <div className="text-neutral mb-6">
+                    <p className="text-lg">Ladataan tuloksia...</p>
+                  </div>
+                ) : (
+                  <>
+                    <h1 className="text-2xl font-bold mb-4 text-neutral">
+                      Sinä olet...
+                    </h1>
+                    <img
+                      src={(results?.profile || calculateResults(answers, flatQuestions)).image}
+                      alt={(results?.profile || calculateResults(answers, flatQuestions)).title}
+                      className="mx-auto mb-4 max-w-full h-auto rounded-md"
+                      style={(results?.profile || calculateResults(answers, flatQuestions)).title === 'Vaakkuva Kuukkeli!' ? 
+                        { maxHeight: '300px', imageRendering: 'auto' } : 
+                        { maxHeight: '300px' }}
+                    />
+                    <p className="text-sm text-neutral-content italic mb-2">
+                      Alkuperäiset ryhmien kuvat: Masi
+                    </p>
+                    <h2 className="text-xl font-semibold mb-4 text-neutral">
+                      {(results?.profile || calculateResults(answers, flatQuestions)).title}
+                    </h2>
+                    <div className="text-neutral mb-6">
+                      {(results?.profile || calculateResults(answers, flatQuestions)).description.map((paragraph, index) => (
+                        <p key={index} className="text-neutral mb-4 last:mb-0">
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
+                    <div className="text-neutral mb-6">
+                      <h3 className="text-lg font-semibold mb-2">Sinun pisteesi:</h3>
+                      <div className="chart-container h-64 mt-4 relative mx-auto w-full">
+                        <style jsx>{`
+                          .nivo-bar-sinun-pisteesi, .nivo-bar-vastaajien-keskiarvo {
+                            opacity: 1;
+                          }
+                          .nivo-bar-label {
+                            fill: #333;
+                            text-shadow: 0 0 2px rgba(255, 255, 255, 0.7);
+                            font-size: ${isMobile ? '10px' : '12px'};
+                          }
+                        `}</style>
+                        <ResponsiveBar
+                          data={getChartData()}
+                          keys={['Sinun pisteesi', 'Vastaajien keskiarvo']}
+                          indexBy="stat"
+                          isInteractive={false}
+                          margin={{
+                            top: isMobile ? 60 : 20,
+                            right: isMobile ? 20 : 30,
+                            bottom: isMobile ? 100 : 120,
+                            left: isMobile ? 20 : 30,
+                          }}
+                          padding={isMobile ? 0.2 : 0.4}
+                          innerPadding={isMobile ? 1 : 2}
+                          groupMode="grouped"
+                          colors={['#1A511F', '#1A711F']}
+                          borderRadius={0}
+                          borderWidth={0}
+                          borderColor={'#333F'}
+                          axisBottom={{
+                            tickSize: 5,
+                            tickPadding: 5,
+                            tickRotation: isMobile ? 45 : 0,
+                            legendPosition: 'middle',
+                            legendOffset: 32,
+                          }}
+                          axisLeft={false}
+                          enableGridY={false}
+                          enableLabel={true}
+                          label={(d) => `${Math.round(d.value)}%`}
+                          labelSkipWidth={isMobile ? 20 : 0}
+                          labelSkipHeight={0}
+                          labelTextColor="#333"
+                          valueScale={{ type: 'linear' }}
+                          indexScale={{ type: 'band', round: true }}
+                          animate={true}
+                          motionStiffness={90}
+                          motionDamping={15}
+                          legends={[
+                            {
+                              dataFrom: 'keys',
+                              anchor: isMobile ? 'top' : 'bottom',
+                              direction: isMobile ? 'column' : 'row',
+                              justify: false,
+                              translateX: 0,
+                              translateY: isMobile ? -40 : 75,
+                              itemsSpacing: isMobile ? 8 : 30,
+                              itemWidth: isMobile ? 100 : 160,
+                              itemHeight: isMobile ? 18 : 20,
+                              itemDirection: 'left-to-right',
+                              itemOpacity: 1,
+                              symbolSize: isMobile ? 10 : 16,
+                              symbolSpacing: 2,
+                              effects: [
+                                {
+                                  on: 'hover',
+                                  style: { itemOpacity: 1 },
+                                },
+                              ],
+                            },
+                          ]}
+                          theme={{
+                            axis: {
+                              ticks: {
+                                text: { fontSize: isMobile ? 10 : 12, fill: '#333' },
+                              },
+                              legend: {
+                                text: { fontSize: isMobile ? 11 : 14, fill: '#333' },
+                              },
+                            },
+                            legends: {
+                              text: { fontSize: isMobile ? 11 : 14, fill: '#333' },
+                            },
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        window.location.reload();
+                      }}
+                      className="px-6 py-3 bg-primary text-white rounded-md hover:bg-neutral-content hover:text-neutral transition-colors text-lg font-semibold border-2 border-neutral"
+                    >
+                      Takaisin alkuun
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
+      </div>
+      <div className="flex w-full flex-col max-w-4xl mx-auto py-4">
+        <div className="divider"></div>
+        <footer className="text-center py-2">
+          <div className="flex items-center justify-center mb-2">
+            <span className="text-neutral text-2xl font-bold">VIHTAVEIKOT</span>
+          </div>
+          <a
+            href="/privacy-notice"
+            className="text-neutral font-bold hover:text-primary text-sm"
+          >
+            Tietosuoja
+          </a>
+        </footer>
       </div>
     </div>
   );
